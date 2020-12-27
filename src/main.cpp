@@ -24,6 +24,9 @@ Config config; // global configuration object
 //flag for saving data
 bool shouldSaveConfig = false;
 
+WiFiUDP ntpUDP;
+NTPClient *timeClient;
+
 //callback notifying us of the need to save config
 void saveConfigCallback () {
   Serial.println("Should save config");
@@ -70,6 +73,12 @@ void saveConfiguration(const char *filename, const Config &config)
   file.close();
 }
 
+void initNtp() {
+  long utcOffsetInSeconds = config.timezone * 60 * 60;
+  timeClient = new NTPClient(ntpUDP, config.timeserver, utcOffsetInSeconds);
+  timeClient->begin();
+}
+
 void setup() {
   Serial.begin(9600);
   Serial.println();
@@ -109,17 +118,13 @@ void setup() {
   }
 
   LittleFS.end();
+  
+  initNtp();
 }
 
-NTPClient *timeClient;
-
-void loop() {
-  WiFiUDP ntpUDP;
-  long utcOffsetInSeconds = config.timezone * 60 * 60;
-  NTPClient timeClient(ntpUDP, config.timeserver, utcOffsetInSeconds);
-  timeClient.begin();
-  timeClient.update();
-  time_t ntpStamp = timeClient.getEpochTime();
+void sendTime() {
+  timeClient->update();
+  time_t ntpStamp = timeClient->getEpochTime();
   Serial.print('T');
   Serial.print(year(ntpStamp));
   Serial.printf("%02d", day(ntpStamp));
@@ -131,11 +136,17 @@ void loop() {
   Serial.printf("%02d", minute(ntpStamp));
   Serial.printf("%02d", second(ntpStamp));
   Serial.println();
+}
+
+void loop() {
+  for (int i = 0; i < 3; i++) {
+    sendTime();
+    delay(1000);
+  }
 
   #if defined(DEBUG)
   delay(10000);
   #else
-  delay(1000); // timeto serial write
   ESP.deepSleep(ESP.deepSleepMax()); // should be normal 72min
   #endif
 }
