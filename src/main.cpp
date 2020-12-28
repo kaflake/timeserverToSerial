@@ -126,9 +126,9 @@ void sendTime() {
   timeClient->update();
   time_t ntpStamp = timeClient->getEpochTime();
   Serial.print('T');
-  Serial.print(year(ntpStamp));
   Serial.printf("%02d", day(ntpStamp));
   Serial.printf("%02d", month(ntpStamp));
+  Serial.print(year(ntpStamp));
   Serial.print("-");
   Serial.print(weekday(ntpStamp) - 1);
   Serial.print("-");
@@ -147,6 +147,6 @@ void loop() {
   #if defined(DEBUG)
   delay(10000);
   #else
-  ESP.deepSleep(ESP.deepSleepMax()); // should be normal 72min
+  ESP.deepSleep(ESP.deepSleepMax());
   #endif
 }
