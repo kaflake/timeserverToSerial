@@ -126,9 +126,9 @@ void sendTime() {
   timeClient->update();
   time_t ntpStamp = timeClient->getEpochTime();
   Serial.print('T');
-  Serial.printf("%02d", day(ntpStamp));
-  Serial.printf("%02d", month(ntpStamp));
   Serial.print(year(ntpStamp));
+  Serial.printf("%02d", month(ntpStamp));
+  Serial.printf("%02d", day(ntpStamp));
   Serial.print("-");
   Serial.print(weekday(ntpStamp) - 1);
   Serial.print("-");
